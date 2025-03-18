@@ -1,13 +1,14 @@
 """
 Script: rss2supabase.py
 Author: drhdev
-Version: 0.1
+Version: 0.2
 License: GNU Public License v3
 
 Description:
 This script reads an RSS feed, processes entries, and stores only new ones in a Supabase database.
 It ensures data integrity, retries on network failures, and logs every step for debugging.
 Environment variables are used for secure API credentials, and UTF-8 encoding is enforced.
+The database schema has been updated to use TIMESTAMP WITH TIME ZONE for published dates.
 """
 
 import os
@@ -15,10 +16,11 @@ import time
 import logging
 import feedparser
 import requests
+import dateutil.parser  # To parse RSS datetime strings
+from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from requests.exceptions import RequestException
-from urllib.parse import urlparse
 
 # Load environment variables
 load_dotenv()
@@ -27,7 +29,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 RSS_FEED_URL = os.getenv("RSS_FEED_URL")
 
 # Configure logging
-LOG_FILE = "rss2supabase.log"
+LOG_FILE = "rss3supabase.log"
 logging.basicConfig(
     filename=LOG_FILE,
     filemode="w",  # Overwrite on each run
@@ -93,11 +95,14 @@ def entry_exists(title, pub_date):
 def store_entry(title, content, pub_date, link):
     """Store a new RSS entry in the database."""
     try:
+        # Convert pub_date to a proper TIMESTAMP format
+        pub_date_parsed = dateutil.parser.parse(pub_date).isoformat()
+
         supabase.table("rss_entries").insert(
             {
                 "title": title,
                 "content": content,
-                "published": pub_date,
+                "published": pub_date_parsed,  # Store as TIMESTAMP WITH TIME ZONE
                 "link": link,
             }
         ).execute()
