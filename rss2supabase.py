@@ -27,7 +27,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 RSS_FEED_URL = os.getenv("RSS_FEED_URL")
 
 # Configure logging
-LOG_FILE = "rss_feed_log.txt"
+LOG_FILE = "rss2supabase.log"
 logging.basicConfig(
     filename=LOG_FILE,
     filemode="w",  # Overwrite on each run
