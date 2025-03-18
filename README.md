@@ -54,13 +54,14 @@ python rss2supabase.py
 
 Make sure you have a `rss_entries` table in your Supabase database:
 
-```sql
+```
 CREATE TABLE rss_entries (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    published TEXT NOT NULL,
-    link TEXT NOT NULL UNIQUE
+    id BIGSERIAL PRIMARY KEY,  -- Ensures unique identifier with a larger range
+    title TEXT NOT NULL CHECK (char_length(title) > 0),  -- Ensures title is not empty
+    content TEXT NOT NULL,  -- Can contain large text
+    published TIMESTAMP WITH TIME ZONE NOT NULL,  -- Ensures proper datetime handling
+    link TEXT NOT NULL UNIQUE CHECK (position('http' IN link) = 1),  -- Ensures a valid URL format
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()  -- Timestamp of entry insertion
 );
 ```
 
